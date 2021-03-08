@@ -10,7 +10,7 @@
 
 #include "cloud_msgs/cloud_info.h"
 
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -50,60 +50,29 @@ using namespace std;
 // rosbag filter "HK-Data20190316-2 20190331_NJ_LL.bag" "lidaronly_HK-Data20190316-2 20190331_NJ_LL.bag" "topic == '/velodyne_points'"
 // rosbag filter "HK-Data20190117.bag" "lidaronly_HK-Data20190117.bag" "topic == '/velodyne_points'"
 
+
 typedef pcl::PointXYZI  PointType;
+//typedef pcl::PointXYZITR PointType;
 
 // extern const string pointCloudTopic = "/velodyne_points";
 // extern const string pointCloudTopic = "/kitti_scan";
-extern const string pointCloudTopic = "/os1_points";
+extern const string pointCloudTopic = "/passthrough/output";
 extern const string imuTopic = "/imu/data";
 
 // Save pcd
 extern const string fileDirectory = "/tmp/";
 
 // Using velodyne cloud "ring" channel for image projection (other lidar may have different name for this channel, change "PointXYZIR" below)
-extern const bool useCloudRing = false; // if true, ang_res_y and ang_bottom are not used
+extern const bool useCloudRing = true; // if true, ang_res_y and ang_bottom are not used
+extern const bool cloudRingRevert = true;
 
-// VLP-16
-// extern const int N_SCAN = 16;
-// extern const int Horizon_SCAN = 1800;
-// extern const float ang_res_x = 0.2;
-// extern const float ang_res_y = 2.0;
-// extern const float ang_bottom = 15.0+0.1;
-// extern const int groundScanInd = 7;
-
-// HDL-32E
-// extern const int N_SCAN = 32;
-// extern const int Horizon_SCAN = 1800;
-// extern const float ang_res_x = 360.0/float(Horizon_SCAN);
-// extern const float ang_res_y = 41.33/float(N_SCAN-1);
-// extern const float ang_bottom = 30.67;
-// extern const int groundScanInd = 20;
-
-// VLS-128
-// extern const int N_SCAN = 128;
-// extern const int Horizon_SCAN = 1800;
-// extern const float ang_res_x = 0.2;
-// extern const float ang_res_y = 0.3;
-// extern const float ang_bottom = 25.0;
-// extern const int groundScanInd = 10;
-
-// Ouster users may need to uncomment line 159 in imageProjection.cpp
-// Usage of Ouster imu data is not fully supported yet (LeGO-LOAM needs 9-DOF IMU), please just publish point cloud data
-// Ouster OS1-16
-// extern const int N_SCAN = 16;
-// extern const int Horizon_SCAN = 1024;
-// extern const float ang_res_x = 360.0/float(Horizon_SCAN);
-// extern const float ang_res_y = 33.2/float(N_SCAN-1);
-// extern const float ang_bottom = 16.6+0.1;
-// extern const int groundScanInd = 7;
-
-// Ouster OS1-64
-extern const int N_SCAN = 64;
-extern const int Horizon_SCAN = 1024;
-extern const float ang_res_x = 360.0/float(Horizon_SCAN);
-extern const float ang_res_y = 33.2/float(N_SCAN-1);
-extern const float ang_bottom = 16.6+0.1;
-extern const int groundScanInd = 15;
+// Hesai Pandar128
+extern const int N_SCAN = 128;
+extern const int Horizon_SCAN = 1800; //  (360.0 / Horizon resolution)
+extern const float ang_res_x = 0.2;
+extern const float ang_res_y = 0.3;
+extern const float ang_bottom = 25.0;
+extern const int groundScanInd = 10;
 
 extern const bool loopClosureEnableFlag = true;
 extern const double mappingProcessInterval = 0.3;
@@ -159,14 +128,14 @@ struct PointXYZIR
 {
     PCL_ADD_POINT4D
     PCL_ADD_INTENSITY;
-    uint16_t ring;
+    std::uint16_t ring;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 } EIGEN_ALIGN16;
 
 POINT_CLOUD_REGISTER_POINT_STRUCT (PointXYZIR,  
                                    (float, x, x) (float, y, y)
                                    (float, z, z) (float, intensity, intensity)
-                                   (uint16_t, ring, ring)
+                                   (std::uint16_t, ring, ring)
 )
 
 /*
@@ -191,5 +160,27 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (PointXYZIRPYT,
 )
 
 typedef PointXYZIRPYT  PointTypePose;
+
+struct PointXYZITR
+{
+    PCL_ADD_POINT4D;                    // quad-word XYZ
+    float    intensity;                 ///< laser intensity reading
+    double timestamp;
+    std::uint16_t ring;                      ///< laser ring number
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW     // ensure proper alignment
+} EIGEN_ALIGN16;
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZITR,
+                                  (float, x, x)
+                                          (float, y, y)
+                                          (float, z, z)
+                                          (float, intensity, intensity)
+                                          (double, timestamp, timestamp)
+                                          (std::uint16_t, ring, ring))
+
+
+
+
+
 
 #endif
