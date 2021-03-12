@@ -268,8 +268,9 @@ public:
         filter_size = 0.3; downSizeFilterHistoryKeyFrames.setLeafSize(filter_size, filter_size, filter_size); // default 0.4; for histor key frames of loop closure
         filter_size = 1.0; downSizeFilterSurroundingKeyPoses.setLeafSize(filter_size, filter_size, filter_size); // default 1; for surrounding key poses of scan-to-map optimization
 
-        downSizeFilterGlobalMapKeyPoses.setLeafSize(1.0, 1.0, 1.0); // for global map visualization
-        downSizeFilterGlobalMapKeyFrames.setLeafSize(0.4, 0.4, 0.4); // for global map visualization
+
+        downSizeFilterGlobalMapKeyPoses.setLeafSize(downsize_map_poses_factor, downsize_map_poses_factor, downsize_map_poses_factor); // for global map visualization
+        downSizeFilterGlobalMapKeyFrames.setLeafSize(downsize_map_frames_factor, downsize_map_frames_factor, downsize_map_frames_factor); // for global map visualization
 
         odomAftMapped.header.frame_id = "camera_init";
         odomAftMapped.child_frame_id = "/aft_mapped";

@@ -11,12 +11,12 @@
     <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0 0 0 -1.570795 -1.570795 0        camera /base_link   10" />
 
     <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
-      <node pkg="nodelet" type="nodelet" name="passthrough" args="load pcl/PassThrough pcl_manager" output="screen">
+      <node pkg="nodelet" type="nodelet" name="passthrough" args="load pcl/PassThrough pcl_manager">
         <remap from="~input" to="/pandar_points" />
         <rosparam>
           filter_field_name: z
           filter_limit_min: -5
-          filter_limit_max: 0.3
+          filter_limit_max: 0.1
           filter_limit_negative: False
         </rosparam>
       </node>

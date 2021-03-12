@@ -74,6 +74,11 @@ extern const float ang_res_y = 0.3;
 extern const float ang_bottom = 25.0;
 extern const int groundScanInd = 10;
 
+// extern const float downsize_map_poses_factor = 0.2;
+// extern const float downsize_map_frames_factor = 0.03;
+extern const float downsize_map_poses_factor = 0.6;
+extern const float downsize_map_frames_factor = 0.1;
+
 extern const bool loopClosureEnableFlag = true;
 extern const double mappingProcessInterval = 0.3;
 
@@ -95,7 +100,7 @@ extern const int surfFeatureNum = 4;
 extern const int sectionsTotal = 6;
 extern const float edgeThreshold = 0.1;
 extern const float surfThreshold = 0.1;
-extern const float nearestFeatureSearchSqDist = 25;
+extern const float nearestFeatureSearchSqDist = 15;
 
 
 // Mapping Params
@@ -164,7 +169,7 @@ typedef PointXYZIRPYT  PointTypePose;
 struct PointXYZITR
 {
     PCL_ADD_POINT4D;                    // quad-word XYZ
-    float    intensity;                 ///< laser intensity reading
+    std::uint8_t  intensity;                 ///< laser intensity reading
     double timestamp;
     std::uint16_t ring;                      ///< laser ring number
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW     // ensure proper alignment
@@ -179,7 +184,18 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZITR,
                                           (std::uint16_t, ring, ring))
 
 
+struct PointXYZI_U8
+{
+    PCL_ADD_POINT4D;                    // quad-word XYZ
+    std::uint8_t  intensity;                 ///< laser intensity reading
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW     // ensure proper alignment
+} EIGEN_ALIGN16;
 
+POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZI_U8,
+                                  (float, x, x)
+                                          (float, y, y)
+                                          (float, z, z)
+                                          (std::uint8_t, intensity, intensity))
 
 
 

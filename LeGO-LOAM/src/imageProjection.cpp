@@ -164,29 +164,49 @@ public:
 
         cloudHeader = laserCloudMsg->header;
         cloudHeader.stamp = ros::Time::now(); // Ouster lidar users may need to uncomment this line
-        pcl::fromROSMsg(*laserCloudMsg, *laserCloudIn);
-        // Remove Nan points
-        std::vector<int> indices;
-        pcl::removeNaNFromPointCloud(*laserCloudIn, *laserCloudIn, indices);
+
         // have "ring" channel in the cloud
         if (useCloudRing == true){
             pcl::fromROSMsg(*laserCloudMsg, *laserCloudInRing);
             if (laserCloudInRing->is_dense == false) {
                 ROS_ERROR("Point cloud is not in dense format, please remove NaN points first!");
                 ros::shutdown();
-            }  
+            }
         }
+
+        // TODO
+        if (laserCloudMsg->fields[3].datatype != pcl::PCLPointField::FLOAT32){
+            laserCloudIn->points.resize(laserCloudInRing->points.size());
+            if (useCloudRing == true){
+                for(size_t i = 0; i < laserCloudInRing->points.size(); i++) {
+                    laserCloudIn->points[i].x = laserCloudInRing->points[i].x;
+                    laserCloudIn->points[i].y = laserCloudInRing->points[i].y;
+                    laserCloudIn->points[i].z = laserCloudInRing->points[i].z;
+                    laserCloudIn->points[i].intensity = static_cast<float>(laserCloudInRing->points[i].intensity) / 255.0f;
+                }
+            }
+        } else {
+            pcl::fromROSMsg(*laserCloudMsg, *laserCloudIn);
+        }
+        // Remove Nan points
+        std::vector<int> indices;
+        pcl::removeNaNFromPointCloud(*laserCloudIn, *laserCloudIn, indices);
+
     }
     
     void cloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
 
         // 1. Convert ros message to pcl point cloud
+        ROS_INFO("laserCloudMsg");
         copyPointCloud(laserCloudMsg);
         // 2. Start and end angle of a scan
+        ROS_INFO("findStartEndAngle");
         findStartEndAngle();
+        ROS_INFO("projectPointCloud");
         // 3. Range image projection
         projectPointCloud();
         // 4. Mark ground points
+        ROS_INFO("groundRemoval");
         groundRemoval();
         // 5. Point cloud segmentation
         cloudSegmentation();
